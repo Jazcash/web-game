@@ -1,0 +1,71 @@
+@function spacer($key) {
+	@if map-has-key($spacer, $key) {
+		@return map-get($spacer, $key);
+	}
+	@warn "Unknown `#{$key}` in $spacer.";
+	@return null;
+}
+
+@function break($key) {
+	@if map-has-key($breakpoints, $key) {
+		@return map-get($breakpoints, $key);
+	}
+	@warn "Unknown `#{$key}` in $breakpoints.";
+	@return null;
+}
+
+@function color($key) {
+	@if map-has-key($colors, $key) {
+		@return map-get($colors, $key);
+	}
+	@warn "Unknown `#{$key}` in $colors.";
+	@return null;
+}
+
+@mixin below($breakpoint) {
+	$value: map-get($breakpoints, $breakpoint);
+	@if $value != null {
+		@media (max-width: $value) { @content; }
+	} @else if type-of($breakpoint) == "number"{
+		@media (max-width: $breakpoint) { @content; }
+	} @else {
+		@warn "Unfortunately, no value could be retrieved from `#{$breakpoint}`. Please make sure it is defined in `$breakpoints` map.";
+	}
+}
+
+@mixin above($breakpoint) {
+	$value: map-get($breakpoints, $breakpoint);
+	@if $value != null {
+		@media (min-width: $value) { @content; }
+	} @else if type-of($breakpoint) == "number"{
+		@media (min-width: $breakpoint) { @content; }
+	} @else {
+		@warn "Unfortunately, no value could be retrieved from `#{$breakpoint}`. Please make sure it is defined in `$breakpoints` map.";
+	}
+}
+
+// https://www.smashingmagazine.com/2016/05/fluid-typography/
+@function strip-unit($value) {
+	@return $value / ($value * 0 + 1);
+}
+@mixin fluid-type($min-vw, $max-vw, $min-font-size, $max-font-size) {
+	$u1: unit($min-vw);
+	$u2: unit($max-vw);
+	$u3: unit($min-font-size);
+	$u4: unit($max-font-size);
+
+	@if $u1 == $u2 and $u1 == $u3 and $u1 == $u4 {
+		& {
+			font-size: $min-font-size;
+			@media screen and (min-width: $min-vw) {
+				font-size: calc(#{$min-font-size} + #{strip-unit($max-font-size - $min-font-size)} * ((100vw - #{$min-vw}) / #{strip-unit($max-vw - $min-vw)}));
+			}
+
+			@media screen and (min-width: $max-vw) {
+				font-size: $max-font-size;
+			}
+		}
+	} @else {
+		@error "Detected mixed units. Please use the same units for all parameters. " + $u1 +", " + $u2 + ", " + $u3 +", "+ $u4;
+	}
+}

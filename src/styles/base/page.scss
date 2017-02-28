@@ -1,0 +1,23 @@
+*, :before, :after{
+	box-sizing: border-box;
+}
+
+html, body{
+	height: 100%;
+}
+
+body{
+	font-family: $bodyFont;
+	color: $bodyTextColor;
+	background-color: $bodyBackgroundColor;
+	overflow-y: scroll;
+	-webkit-font-smoothing: antialiased; // standardise font appearance between OS'
+	-moz-osx-font-smoothing: grayscale;
+}
+
+main{
+	background-color: $mainBackgroundColor;
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+}

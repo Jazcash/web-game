@@ -1,0 +1,59 @@
+h1,h2,h3,h4,h5,h6,
+.h1,.h2,.h3,.h4,.h5,.h6{
+	margin: 0;
+	//margin-bottom: spacer(sm);
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
+	line-height: 1.2;
+}
+
+h1,.h1{ @include fluid-type(500px, $wrapperWidth, 30px, 48px); }
+h2,.h2{ @include fluid-type(500px, $wrapperWidth, 24px, 36px); }
+h3,.h3{ @include fluid-type(500px, $wrapperWidth, 20px, 32px); }
+h4,.h4{ @include fluid-type(500px, $wrapperWidth, 18px, 24px); }
+h5,.h5{ @include fluid-type(500px, $wrapperWidth, 16px, 20px); }
+h6,.h6{ @include fluid-type(500px, $wrapperWidth, 14px, 16px); }
+
+p, .p{
+	line-height: 1.8;
+	margin: spacer(sm) 0;
+	@include fluid-type(500px, $wrapperWidth, 14px, 16px);
+	&.lead{
+		@include fluid-type(500px, $wrapperWidth, 16px, 18px);
+		font-weight: 600;
+	}
+}
+
+li{
+	@extend .p;
+	margin: 0;
+}
+
+blockquote{
+	padding-left: spacer(md);
+	border-left: 3px solid #ccc;
+	font-style: italic;
+	opacity: 0.8;
+	footer{
+		background: none;
+		font-style: normal;
+		font-weight: 600;
+	}
+}
+
+:not(pre) > code{
+	background: #ddd;
+	border: 1px solid rgba(#000, 0.2);
+	border-radius: 2px;
+	padding: 0 4px;
+	white-space: nowrap;
+}
+
+small{
+	font-size: 75%;
+}
+
+strong{
+	font-weight: 600;
+	&.stronger{ font-weight: 700; }
+	&.strongest{ font-weight: 800; }
+}

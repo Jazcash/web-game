@@ -1,0 +1,33 @@
+// stop remodal being silly
+html.remodal-is-locked{
+	overflow: initial;
+	touch-action: initial;
+}
+body{
+	padding-right: 0 !important;
+}
+
+.color-block{
+	padding: 20px;
+	text-align: center;
+	color: #fff;
+	font-size: 14px;
+	&__name{
+		mix-blend-mode: difference;
+		padding: 5px;
+	}
+	&__hex{
+		mix-blend-mode: difference;
+		font-weight: 100;
+	}
+}
+
+.jazcss{
+	&-item{
+		height: 100%;
+		padding: spacer(sm);
+		color: #aaa;
+		border: 1px solid #aaa;
+		background: #eee;
+	}
+}

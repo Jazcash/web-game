@@ -1,2 +1,2 @@
-# web-game
-WebGL, Websockets, Node.js game
+# jazcss-server
+Jazcss + an express.js server

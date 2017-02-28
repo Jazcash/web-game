@@ -1,0 +1,46 @@
+/*
+	Examples
+
+	padded-md: pads an element by spacer-md on all sides
+	padded-v-sm: pads an element by spacer-sm on top and bottom
+	padded-v-xs padded-h-xl: pads an element by spacer-xs on
+	top and bottom and spacer-xl on left and right
+*/
+
+.padded{
+	@each $key, $val in $spacer{
+		&-#{$key}{
+			padding: $val;
+		}
+		&-h-#{$key}{
+			padding-left: $val;
+			padding-right: $val;
+		}
+		&-v-#{$key}{
+			padding-top: $val;
+			padding-bottom: $val;
+		}
+	}
+}
+
+@each $key, $val in $breakpoints{
+	&.#{$key}{
+		@include above($val){
+			&-padded{
+				@each $key, $val in $spacer{
+					&-#{$key}{
+						padding: $val;
+					}
+					&-h-#{$key}{
+						padding-left: $val;
+						padding-right: $val;
+					}
+					&-v-#{$key}{
+						padding-top: $val;
+						padding-bottom: $val;
+					}
+				}
+			}
+		}
+	}
+}
