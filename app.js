@@ -5,7 +5,7 @@ let server = require('http').createServer(app);
 let io = require('socket.io')(server);
 
 server.listen("4050", function () {
-	console.log("Express server listening on port 4000");
+	console.log("Express server listening on port 4050");
 });
 
 let players = {};
