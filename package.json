@@ -41,11 +41,18 @@
     "handlebars-helpers": "^0.8.0"
   },
   "dependencies": {
+    "body-parser": "^1.17.0",
+    "compression": "^1.6.2",
+    "cookie-parser": "^1.4.3",
     "express": "^4.14.1",
     "express-handlebars": "^3.0.0",
     "express-ws": "^3.0.0",
     "glob": "^7.1.1",
     "gulp-nodemon": "^2.2.1",
-    "handlebars-wax": "^5.1.1"
+    "handlebars-wax": "^5.1.1",
+    "method-override": "^2.3.7",
+    "morgan": "^1.8.1",
+    "serve-favicon": "^2.4.1",
+    "socket.io": "^1.7.3"
   }
 }

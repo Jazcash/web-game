@@ -1,16 +1,38 @@
 let express = require('express');
 let app = express();
-var expressWs = require('express-ws')(app);
-
 require("./express")(app);
+let server = require('http').createServer(app);
+let io = require('socket.io')(server);
 
-app.ws('/', function(ws, req) {
-	ws.on('message', function(msg) {
-		console.log(msg);
-	});
-	console.log('socket', req.testing);
-});
-
-app.listen("4000", function () {
+server.listen("4000", function () {
 	console.log("Express server listening on port 4000");
 });
+
+let players = {};
+
+io.on("connection", function(client) {
+	console.log("Client connected");
+
+	client.on("ready", function(){
+		client.emit("init", {id: client.id, x: 100, y: 100, players: players});
+		client.broadcast.emit("addPlayer", {id: client.id, x: 100, y: 100, players: players});
+		players[client.id] = {x: 100, y: 100};
+	});
+
+	client.on("updatePlayer", function(data){
+		if (client.id in players){
+			players[client.id].x = data.x;
+			players[client.id].y = data.y;
+		}
+	});
+
+	client.on("disconnect", function(){
+		console.log("Client disconnected");
+		delete players[client.id];
+		io.sockets.emit("deletePlayer", client.id);
+	});
+});
+
+setInterval(function(){
+	io.sockets.emit("updatePlayers", players);
+}, 10);

@@ -1,116 +1,148 @@
+var socket = io.connect('http://127.0.0.1:4000');
+
+socket.on("connection", function(client) {
+	console.log(client);
+});
+
 let doc = document.getElementById("pixiContainer");
 
-//Aliases
-var Container = PIXI.Container,
-	autoDetectRenderer = PIXI.autoDetectRenderer,
-	loader = PIXI.loader,
-	resources = PIXI.loader.resources,
-	Sprite = PIXI.Sprite;
+var stage = new PIXI.Container(),
+	renderer = PIXI.autoDetectRenderer(512, 512);
 
-//Create a Pixi stage and renderer and add the
-//renderer.view to the DOM
-var stage = new Container(),
-	renderer = autoDetectRenderer(256, 256);
 doc.appendChild(renderer.view);
 
-loader
-	.add("images/cat.png")
-	.load(setup);
+PIXI.loader.add("treasureHunter.json").load(setup);
 
-//Define any variables that are used in more than one function
-var cat, state;
+var player, dungeon, rectangle;
+let myId;
+let players = {};
 
 function setup() {
+	var dungeonTexture = PIXI.utils.TextureCache["images/dungeon.png"];
+	dungeon = new PIXI.Sprite(dungeonTexture);
+	stage.addChild(dungeon);
 
-	//Create the `cat` sprite
-	cat = new Sprite(resources["images/cat.png"].texture);
-	cat.y = 96;
-	cat.vx = 0;
-	cat.vy = 0;
-	stage.addChild(cat);
+	socket.emit("ready");
 
-	//Capture the keyboard arrow keys
-	var left = keyboard(37),
+	socket.on("init", function(initData){
+		players = initData.players;
+		myId = initData.id;
+
+		var playerTexture = PIXI.utils.TextureCache["images/explorer.png"];
+		player = new PIXI.Sprite(playerTexture);
+
+		player.y = initData.x;
+		player.x = initData.y;
+		player.vx = 0;
+		player.vy = 0;
+		stage.addChild(player);
+
+		for(var key in players){
+			let localPlayer = new PIXI.Sprite(playerTexture);
+			localPlayer.y = players[key].x;
+			localPlayer.x = players[key].y;
+			localPlayer.vx = 0;
+			localPlayer.vy = 0;
+			players[key] = localPlayer;
+			stage.addChild(localPlayer);
+		}
+
+		var left = keyboard(37),
 		up = keyboard(38),
 		right = keyboard(39),
 		down = keyboard(40);
 
-	//Left arrow key `press` method
-	left.press = function () {
-		//Change the cat's velocity when the key is pressed
-		cat.vx = -5;
-		cat.vy = 0;
-	};
-	//Left arrow key `release` method
-	left.release = function () {
-		//If the left arrow has been released, and the right arrow isn't down,
-		//and the cat isn't moving vertically:
-		//Stop the cat
-		if (!right.isDown && cat.vy === 0) {
-			cat.vx = 0;
+		left.press = function () {
+			player.vx = -3;
+			player.vy = 0;
+		};
+		left.release = function () {
+			if (!right.isDown && player.vy === 0) {
+				player.vx = 0;
+			}
+		};
+
+		up.press = function () {
+			player.vy = -3;
+			player.vx = 0;
+		};
+		up.release = function () {
+			if (!down.isDown && player.vx === 0) {
+				player.vy = 0;
+			}
+		};
+
+		right.press = function () {
+			player.vx = 3;
+			player.vy = 0;
+		};
+		right.release = function () {
+			if (!left.isDown && player.vy === 0) {
+				player.vx = 0;
+			}
+		};
+
+		down.press = function () {
+			player.vy = 3;
+			player.vx = 0;
+		};
+		down.release = function () {
+			if (!up.isDown && player.vx === 0) {
+				player.vy = 0;
+			}
+		};
+
+		gameLoop();
+	});
+
+	socket.on("addPlayer", function(data){
+		if (!(data.id in players)){
+			var playerTexture = PIXI.utils.TextureCache["images/explorer.png"];
+			var newPlayer = new PIXI.Sprite(playerTexture);
+
+			newPlayer.y = data.x;
+			newPlayer.x = data.y;
+			newPlayer.vx = 0;
+			newPlayer.vy = 0;
+			players[data.id] = newPlayer;
+			stage.addChild(newPlayer);
 		}
-	};
+	});
 
-	//Up
-	up.press = function () {
-		cat.vy = -5;
-		cat.vx = 0;
-	};
-	up.release = function () {
-		if (!down.isDown && cat.vx === 0) {
-			cat.vy = 0;
+	socket.on("updatePlayers", function(playersData){
+		for(var key in playersData){
+			if (key !== myId){
+				if (key in players){
+					players[key].x = playersData[key].x;
+					players[key].y = playersData[key].y;
+				}
+			}
 		}
-	};
+	});
 
-	//Right
-	right.press = function () {
-		cat.vx = 5;
-		cat.vy = 0;
-	};
-	right.release = function () {
-		if (!left.isDown && cat.vy === 0) {
-			cat.vx = 0;
-		}
-	};
-
-	//Down
-	down.press = function () {
-		cat.vy = 5;
-		cat.vx = 0;
-	};
-	down.release = function () {
-		if (!up.isDown && cat.vx === 0) {
-			cat.vy = 0;
-		}
-	};
-
-	//Set the game state
-	state = play;
-
-	//Start the game loop
-	gameLoop();
+	socket.on("deletePlayer", function(id){
+		delete players[id];
+	});
 }
 
 function gameLoop() {
+	socket.emit("updatePlayer", {x: player.x, y: player.y});
 
-	//Loop this function 60 times per second
 	requestAnimationFrame(gameLoop);
-
-	//Update the current game state
-	state();
-
-	//Render the stage
+	play();
 	renderer.render(stage);
 }
 
 function play() {
+	if (player){
+		if (player.x + player.vx > 28 && player.x + player.vx < 464)
+			player.x += player.vx;
 
-	//Use the cat's velocity to make it move
-	cat.x += cat.vx;
-	cat.y += cat.vy
+		if (player.y + player.vy > 28 && player.y + player.vy < 448)
+			player.y += player.vy
+	}
 }
 
-//The `keyboard` helper function
 function keyboard(keyCode) {
 	var key = {};
 	key.code = keyCode;
@@ -118,7 +150,7 @@ function keyboard(keyCode) {
 	key.isUp = true;
 	key.press = undefined;
 	key.release = undefined;
-	//The `downHandler`
+
 	key.downHandler = function (event) {
 		if (event.keyCode === key.code) {
 			if (key.isUp && key.press) key.press();
@@ -128,7 +160,6 @@ function keyboard(keyCode) {
 		event.preventDefault();
 	};
 
-	//The `upHandler`
 	key.upHandler = function (event) {
 		if (event.keyCode === key.code) {
 			if (key.isDown && key.release) key.release();
@@ -138,12 +169,39 @@ function keyboard(keyCode) {
 		event.preventDefault();
 	};
 
-	//Attach event listeners
-	window.addEventListener(
-		"keydown", key.downHandler.bind(key), false
-	);
-	window.addEventListener(
-		"keyup", key.upHandler.bind(key), false
-	);
+	window.addEventListener("keydown", key.downHandler.bind(key), false);
+	window.addEventListener("keyup", key.upHandler.bind(key), false);
 	return key;
 }
+
+function hitTestRectangle(r1, r2) {
+	var hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
+	hit = false;
+
+	r1.centerX = r1.x + r1.width / 2;
+	r1.centerY = r1.y + r1.height / 2;
+	r2.centerX = r2.x + r2.width / 2;
+	r2.centerY = r2.y + r2.height / 2;
+
+	r1.halfWidth = r1.width / 2;
+	r1.halfHeight = r1.height / 2;
+	r2.halfWidth = r2.width / 2;
+	r2.halfHeight = r2.height / 2;
+
+	vx = r1.centerX - r2.centerX;
+	vy = r1.centerY - r2.centerY;
+
+	combinedHalfWidths = r1.halfWidth + r2.halfWidth;
+	combinedHalfHeights = r1.halfHeight + r2.halfHeight;
+
+	if (Math.abs(vx) < combinedHalfWidths) {
+		if (Math.abs(vy) < combinedHalfHeights) {
+			hit = true;
+		} else {
+			hit = false;
+		}
+	} else {
+		hit = false;
+	}
+	return hit;
+};

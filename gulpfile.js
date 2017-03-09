@@ -74,14 +74,14 @@ gulp.task("images", function(){
 		.pipe(browserSync.stream({match: "images/**/*"}));
 });
 
-gulp.task("videos", function(){
-	return gulp.src("src/videos/**/*")
+gulp.task("json", function(){
+	return gulp.src("src/**/*.json")
 		.pipe(plumber({errorHandler: function (err) {
 			console.log(err);
 			this.emit("end");
 		}}))
-		.pipe(gulp.dest("build/videos"))
-		.pipe(browserSync.stream({match: "video/**/*"}));
+		.pipe(gulp.dest("build"))
+		.pipe(browserSync.stream({match: "**/*.json"}));
 });
 
 gulp.task("fonts", function(){
@@ -110,7 +110,8 @@ gulp.task("nodemon", function (cb) {
 	var started = false;
 	return nodemon({
 		script: "app.js",
-		ext: "hbs"
+		ext: "hbs",
+		watch: ["app.js"]
 	}).on("start", function () {
 		if (!started) {
 			cb();
@@ -124,7 +125,7 @@ gulp.task("watch", function(){
 	gulp.watch("src/scripts/**/*.js", ["scripts"], browserSync.reload);
 	gulp.watch("src/fonts/**/*", ["fonts"], browserSync.reload);
 	gulp.watch("src/images/**/*.{png,jpg,gif}", ["images"], browserSync.reload);
-	gulp.watch("src/videos/**/*", ["videos"], browserSync.reload);
+	gulp.watch("src/**/*.json", ["json"], browserSync.reload);
 });
 
 gulp.task("clean", function(){
@@ -132,11 +133,11 @@ gulp.task("clean", function(){
 });
 
 gulp.task("build", function(){
-	return runSequence("clean", ["styles", "scripts", "fonts", "videos", "images"]);
+	return runSequence("clean", ["styles", "scripts", "fonts", "json", "images"]);
 });
 
 gulp.task("serve", function(){
-	return runSequence("clean", ["styles", "scripts", "fonts", "images"], "browsersync");
+	return runSequence("clean", ["styles", "scripts", "fonts", "images", "json"], "browsersync");
 });
 
 gulp.task("default", [
