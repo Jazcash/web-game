@@ -4,7 +4,7 @@ require("./express")(app);
 let server = require('http').createServer(app);
 let io = require('socket.io')(server);
 
-server.listen("4000", function () {
+server.listen("4050", function () {
 	console.log("Express server listening on port 4000");
 });
 
